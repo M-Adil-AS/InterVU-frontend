@@ -6,9 +6,9 @@ import { redirect } from 'next/navigation'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Jobster',
+  title: 'interVU',
   description: 'NextJS 13 Project',
-  keywords: 'NextJS, NextJS 13, web development, Tailwind CSS, Jobster',
+  keywords: 'NextJS, NextJS 13, web development, Tailwind CSS, interVU',
   viewport: {
     width: 'device-width',
     initialScale: 1,

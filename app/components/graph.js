@@ -8,9 +8,12 @@ import {
   Title,
   Tooltip,
   Legend,
+  PointElement,
+  LineElement,
+  Filler,
 } from 'chart.js';
 
-import { Bar } from 'react-chartjs-2';
+import { Bar, Line } from 'react-chartjs-2';
 import {useEffect, useState} from 'react'
 import Loading from '../(main)/loading'
 
@@ -20,12 +23,20 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend, 
+  PointElement,
+  LineElement,
+  Filler,
 );
 
 export const options = {
   responsive: true,
-  maintainAspectRatio: false
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false
+    }
+  }
 };
 
 const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
@@ -34,16 +45,17 @@ export const data = {
   labels,
   datasets: [
     {
-      label: 'Dataset 1',
+      fill: true,
+      backgroundColor: 'rgba(59, 130, 246, 0.6)',
       data: [100,500,300,600,200,900,700],
-      backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      tension:0.5
     }
   ],
 };
 
 export default function Graph() {
   const [loading, setLoading] = useState(true)
-  const [chart, setChart] = useState('bar')
+  const [chart, setChart] = useState('Bar')
 
     useEffect(()=>{
       setLoading(false)
@@ -53,11 +65,16 @@ export default function Graph() {
       <div className="pt-12 sm:p-8 sm:pt-16">
         {!loading ? 
           <div>
-            <p className="mb-3 text-xl md:text-xl text-center px-2">Monthly Applications</p>
-            <p className="mb-3 text-lg text-blue-500 text-center px-2">Bar Chart</p>
-            <div>
-              <Bar options={options} data={data} height={400}/>
-            </div>
+            <p className="mb-3 text-xl md:text-xl text-center px-2">Monthly Interviews</p>
+            <p className="mb-3 text-lg text-primary-700 text-center px-2"><span onClick={()=> setChart(chart=='Bar'?'Area':'Bar')}>{chart} Chart</span></p>
+            {chart=='Bar'?
+              <div>
+                <Bar options={options} data={data} height={400}/>
+              </div>:
+              <div>
+                <Line options={options} data={data} height={400}/>
+              </div>
+            }
           </div>:
           <Loading/>}
       </div>
