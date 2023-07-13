@@ -15,7 +15,7 @@ import {
 
 import { Bar, Line } from 'react-chartjs-2';
 import {useEffect, useState} from 'react'
-import Loading from '../(main)/loading'
+import Loading from '../loading'
 
 ChartJS.register(
   CategoryScale,

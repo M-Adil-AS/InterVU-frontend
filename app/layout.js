@@ -1,6 +1,6 @@
-import '../../app/globals.css'
+import '../app/globals.css'
 import { Inter } from 'next/font/google'
-import Navbar from '../components/navbar.js'
+import Navbar from './components/navbar.js'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { headers } from "next/headers";
@@ -28,7 +28,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         {
-          (userCookie && userCookie.value) || activePath=='/landing' ?
+          (activePath=='/login' || activePath=='/register') ? 
+            ((userCookie && userCookie.value) ? redirect('/') : children)
+          :
+          (userCookie && userCookie.value) || activePath=='/landing' ? 
           <>
             <Navbar user={userCookie}/>
             {children}
