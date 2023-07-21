@@ -2,8 +2,8 @@ import '../app/globals.css'
 import { Inter } from 'next/font/google'
 import Navbar from './components/navbar.js'
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { headers } from "next/headers";
+import { AppProvider } from './context.js'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,22 +23,15 @@ export default function RootLayout({ children }) {
   const userCookie = cookieStore.get('user')
   const headersList = headers();
   const activePath = headersList.get("x-invoke-path");
-
-  return (
+  
+  return (   
     <html lang="en">
       <body className={inter.className}>
-        {
-          (activePath=='/login' || activePath=='/register') ? 
-            ((userCookie && userCookie.value) ? redirect('/') : children)
-          :
-          (userCookie && userCookie.value) || activePath=='/landing' ? 
-          <>
-            <Navbar user={userCookie}/>
-            {children}
-          </>:
-          redirect('/landing')
-        }
+      <AppProvider>
+          <Navbar user={userCookie}></Navbar>
+          {children}
+      </AppProvider>
       </body>
-    </html>
+    </html>    
   )
 }

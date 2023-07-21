@@ -1,36 +1,49 @@
 'use client'
 import Link from 'next/link'
-import {useState} from 'react'
+import {useState, useContext} from 'react'
+import { useRouter } from 'next/navigation';
+import {AppContext} from '../context'
 
 const Register = () => {
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const {state,dispatch} = useContext(AppContext)
+    const router = useRouter()
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault()
 
-        fetch('http://localhost:5000/api/v1/auth/register', {
-            cache: 'no-store',
-            credentials: 'include',
-            method: 'POST',
-            headers: {
-                'Content-type': 'application/json',
-            },
-            body: JSON.stringify({name, email, password}),
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log(data);
-        })
-        .catch((error) => {
-            console.error(error);
-        });
+        try{
+            const response = await fetch('http://localhost:5000/api/v1/auth/register', {
+                cache: 'no-store',
+                credentials: 'include',
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: JSON.stringify({name, email, password}),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                dispatch({type:'set toast', payload:{type:'error', text: data.msg}})
+            }
+            else if (response.ok){
+                dispatch({type:'set toast', payload:{type:'success', text: `Welcome ${data.user.name}`}})
+                router.push('/')
+                router.refresh()
+            } 
+        }
+        catch(error){
+            dispatch({type:'set toast', payload:{type:'error', text: 'Something went wrong try again later'}})
+        }
     }
 
     return (
         <section className="bg-gray-50 dark:bg-gray-900">
-        <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+        <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto lg:h-screen lg:py-0">
 
             <a
             href="/"
@@ -48,7 +61,7 @@ const Register = () => {
                 <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                 Create an account
                 </h1>
-                <form className="space-y-4 md:space-y-6" action="#" onSubmit={(e)=> handleSubmit(e)}>
+                <form className="space-y-4 md:space-y-6" onSubmit={(e)=> handleSubmit(e)}>
                 <div>
                     <label
                     htmlFor="name"
