@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
   const userCookie = cookieStore.get('user')
   const headersList = headers();
   const activePath = headersList.get("x-invoke-path");
-  
+
   return (   
     <html lang="en">
       <body className={inter.className}>
