@@ -9,6 +9,11 @@ const Navbar = ({user}) => {
     const sidebarRef = useRef(null);
     const navbarHidden = (pathname=='/login' || pathname=='/register')
 
+    if(user && user.value){console.log(user.value)
+      const cleanedJsonString = String(user).replace('j:', '');
+      console.log(cleanedJsonString)
+    }
+
     const toggleSidebar = () => {
       sidebarRef.current.classList.toggle('translate-x-0');
     };
