@@ -1,22 +1,55 @@
 'use client'
-import {useRef} from 'react'
+import {useRef, useContext} from 'react'
+import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link'
+import {AppContext} from '../context'
 import Toast from './toast'
 
 const Navbar = ({user}) => {
+    const {state,dispatch} = useContext(AppContext)
+    const router = useRouter()
     const pathname = usePathname();
     const sidebarRef = useRef(null);
     const navbarHidden = (pathname=='/login' || pathname=='/register')
+    let username = null
 
-    if(user && user.value){console.log(user.value)
-      const cleanedJsonString = String(user).replace('j:', '');
-      console.log(cleanedJsonString)
+    if(user && user.value){
+      const cleanedJsonString = user.value.replace('j:', '');
+      username = JSON.parse(cleanedJsonString).name
     }
 
     const toggleSidebar = () => {
       sidebarRef.current.classList.toggle('translate-x-0');
     };
+
+    const handleClick = async(e) => {
+      try{
+        const response = await fetch('http://localhost:5000/api/v1/auth/logout', {
+            cache: 'no-store',
+            credentials: 'include',
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+            dispatch({type:'set toast', payload:{type:'error', text: data.msg}})
+        }
+        else if (response.ok){
+            dispatch({type:'set toast', payload:{type:'success', text: `Logging out`}})
+            router.push('/')
+            router.refresh()
+        } 
+      }
+      catch(error){
+          dispatch({type:'set toast', payload:{type:'error', text: 'Something went wrong try again later'}})
+      }
+    }
 
     if(navbarHidden){ 
       return <Toast/>
@@ -86,7 +119,7 @@ const Navbar = ({user}) => {
                         data-dropdown-trigger="hover"
                         className="hidden sm:block text-primary-700 font-medium rounded-lg text-md pl-3 pr-5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                         type="button"
-                      >Adil Ahmed Siddiqui{" "}
+                        >{username}{" "}
                       </span>
                     </div>
                   </Link>
@@ -123,10 +156,10 @@ const Navbar = ({user}) => {
                   </a>
                 </li>
                 <li>
-                  <a href="/log-out" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <button onClick={(e)=> handleClick(e)} className="flex items-center p-2 w-[100%] text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
                     <svg className="flex-shrink-0 w-6 h-6 pl-1 pt-1 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h11m0 0-4-4m4 4-4 4m-5 3H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h3"/></svg>
-                    <span className="flex-1 ml-3 whitespace-nowrap">Log Out</span>
-                  </a>
+                    <span className="ml-3 whitespace-nowrap">Log Out</span>
+                  </button>
                 </li>
               </ul>
             </div>
