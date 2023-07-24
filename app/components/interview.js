@@ -13,12 +13,12 @@ export default function Interview({interview, deleteInterview}) {
 
     return (
         <div className="block p-6 bg-white border border-gray-200 rounded-lg shadow">
-            <div className='flex justify-between'>
-                <div className='flex items-center'>
+            <div className='flex justify-between min-w-[100%] max-w-[100%] w-[100%] text-ellipsis overflow-hidden'>
+                <div className='flex items-center min-w-[100%] max-w-[100%] w-[100%] text-ellipsis overflow-hidden'>
                     <div className='bg-primary-700 w-[50px] h-[50px] mr-4 rounded-full text-white text-lg flex flex-shrink-0 items-center justify-center'>{company[0].toUpperCase()}</div>
-                    <div className='mr-4'>
-                        <p className="text-lg font-normal">{position}</p>
-                        <p className="text-md text-gray-500 font-normal">{company}</p>                       
+                    <div className=''>
+                        <p className="text-lg font-normal min-w-[100%] h-[28px] truncate">{position}</p>
+                        <p className="text-md text-gray-500 font-normal min-w-[100%] h-[24px] truncate">{company}</p>                       
                     </div>
                 </div>
             </div>

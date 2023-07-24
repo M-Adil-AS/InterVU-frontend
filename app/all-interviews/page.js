@@ -12,10 +12,21 @@ export default function All_Interviews() {
     const [type, setType] = useState('All')
     const [sort, setSort] = useState('Latest')
     const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(3)
+    const [limit, setLimit] = useState(10)
     const [interviews, setInterviews] = useState([])
     const [total, setTotal] = useState(0)
     const {state,dispatch} = useContext(AppContext)
     const router = useRouter()
+
+    let displayPages = [page]
+    if(page+1 <= totalPages) displayPages.push(page+1)
+    if(page-1 > 0) displayPages.push(page-1)
+    if(page==1 && page+2 <= totalPages) displayPages.push(page+2)
+    if(page==totalPages && page-2 > 0) displayPages.push(page-2)
+    displayPages.sort((a,b) => a-b)
+    if(displayPages[0]!=1) displayPages.unshift('...')
+    if(displayPages[displayPages.length-1]!=totalPages) displayPages.push('...')
 
     const deleteInterview = async(ID) => {
         try{
@@ -50,7 +61,7 @@ export default function All_Interviews() {
 
     const fetchInterviews = async() => {
         try{
-            let queryParams = `?status=${status}&type=${type}&sort=${sort}&page=${page}`;
+            let queryParams = `?status=${status}&type=${type}&sort=${sort}&page=${page}&limit=${limit}`;
             if (search) {
                 queryParams = queryParams + `&search=${search}`;
             }
@@ -76,7 +87,8 @@ export default function All_Interviews() {
             }
             else if (response.ok){
                 setInterviews(data.interviews)
-                setTotal(data.totalJobs)
+                setTotal(data.totalInterviews)
+                setTotalPages(data.numOfPages)
                 setLoading(false)
             } 
         }
@@ -88,7 +100,7 @@ export default function All_Interviews() {
     useEffect(()=>{
         setLoading(true)
         fetchInterviews()
-    },[search, status, type, sort])
+    },[search, status, type, sort, page, limit])
 
     return (
         <div className="p-4 lg:ml-64">
@@ -112,7 +124,7 @@ export default function All_Interviews() {
                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Search by Position or Company Name"
                             value={search}
-                            onChange={(e)=> setSearch(e.target.value)}
+                            onChange={(e)=> {setSearch(e.target.value); setPage(1)}}
                             />
                         </div>
                         <div className="md:mb-6 mb-2">
@@ -125,7 +137,7 @@ export default function All_Interviews() {
                             <select
                             id="status"
                             value={status}
-                            onChange={(e)=> setStatus(e.target.value)}
+                            onChange={(e)=> {setStatus(e.target.value); setPage(1)}}
                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             >
                                 <option>All</option>
@@ -145,7 +157,7 @@ export default function All_Interviews() {
                             <select
                             id="type"
                             value={type}
-                            onChange={(e)=> setType(e.target.value)}
+                            onChange={(e)=> {setType(e.target.value); setPage(1)}}
                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             >
                                 <option>All</option>
@@ -153,7 +165,7 @@ export default function All_Interviews() {
                                 <option>Online</option>
                             </select>
                         </div>
-                        <div className="mb-5">
+                        <div className="md:mb-6 mb-2">
                             <label
                             htmlFor="sort"
                             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -170,26 +182,43 @@ export default function All_Interviews() {
                                 <option>a-z</option>
                             </select>
                         </div>
+                        <div className="mb-5">
+                            <label
+                            htmlFor="limit"
+                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            >
+                            Results per page
+                            </label>
+                            <select
+                            id="limit"
+                            value={limit}
+                            onChange={(e)=> {setLimit(e.target.value); setPage(1)}}
+                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            >
+                                <option>10</option>
+                                <option>20</option>
+                                <option>30</option>
+                            </select>
+                        </div>
                         
                     </div>
                 </div>
 
                 {loading ? <Loading/> : 
                 <>
-                    <p className="mb-3 mt-8 text-lg md:text-xl"><strong>{total} Interview{total>1 && 's'}</strong></p>
+                    <p className="mb-3 mt-8 text-lg md:text-xl font-semibold">Showing {(page*limit)-limit+1}-{page*limit} of {total} Result{total>1 && 's'}</p>
                     <div className='grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4'>
                         {interviews.map((interview, index)=>{
                             return <Interview key={interview._id} interview={interview} deleteInterview={deleteInterview}/> 
                         })}                   
                     </div>
        
-                    <div className='flex justify-center'>
+                    <div className={`flex justify-center ${!interviews.length && 'hidden'}`}>
                         <nav aria-label="Page navigation example" className='mt-6'>
                             <ul className="flex items-center flex-wrap -space-x-px h-10 text-sm sm:text-base">
-                                <li>
-                                    <a
-                                    href="#"
-                                    className="flex items-center justify-center px-3 h-9 sm:px-4 sm:h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                                <li onClick={(e)=> setPage(page => page==1 ? totalPages : page-1)} className={`${totalPages==1 && 'hidden'}`}>
+                                    <button
+                                    className="flex items-center justify-center px-4 h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                                     >
                                     <span className="sr-only">Previous</span>
                                     <svg
@@ -207,37 +236,23 @@ export default function All_Interviews() {
                                         d="M5 1 1 5l4 4"
                                         />
                                     </svg>
-                                    </a>
+                                    </button>
                                 </li>
-                                <li>
-                                    <a
-                                    href="#"
-                                    className="flex items-center justify-center px-3 h-9 sm:px-4 sm:h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                                    >
-                                    11
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                    href="#"
-                                    className="flex items-center justify-center px-3 h-9 sm:px-4 sm:h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                                    >
-                                    12
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                    href="#"
-                                    aria-current="page"
-                                    className="z-10 flex items-center justify-center px-3 h-9 sm:px-4 sm:h-10 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-                                    >
-                                    13
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                    href="#"
-                                    className="flex items-center justify-center px-3 h-9 sm:px-4 sm:h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                                
+                                {displayPages.map((elem, index) => {
+                                    return(
+                                    <li key={index} onClick={(e)=> elem != '...' && setPage(Number(elem))} className={`${(elem != '...' && Number(elem) != page) && 'hidden sm:list-item'}`}>
+                                        <button
+                                        className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${elem==page ? 'bg-primary-700 text-white' : 'bg-white hover:bg-gray-100 hover:text-gray-700'}`}
+                                        >
+                                        {elem}
+                                        </button>
+                                    </li>                 
+                                )})}
+
+                                <li onClick={(e)=> setPage(page => page==totalPages ? 1 : page+1)} className={`${totalPages==1 && 'hidden'}`}>
+                                    <button
+                                    className="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                                     >
                                     <span className="sr-only">Next</span>
                                     <svg
@@ -255,7 +270,7 @@ export default function All_Interviews() {
                                         d="m1 9 4-4-4-4"
                                         />
                                     </svg>
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
                         </nav>

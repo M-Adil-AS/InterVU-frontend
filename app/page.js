@@ -1,13 +1,60 @@
+'use client'
+
 import Graph from './components/graph'
+import {useState, useContext, useEffect} from 'react'
+import { useRouter } from 'next/navigation';
+import {AppContext} from './context'
 
 export default function Home() {
+  const [stats, setStats] = useState(null)
+  const [monthlyApp, setMonthlyApp] = useState(null)
+  const [isLoading, setLoading] = useState(true)
+  const {state,dispatch} = useContext(AppContext)
+  const router = useRouter()
+
+  const fetchStats = async() => {
+    try{
+        const response = await fetch('http://localhost:5000/api/v1/interviews/stats', {
+            cache: 'no-store',
+            credentials: 'include',
+            method: 'GET',
+            headers: {
+                'Content-type': 'application/json',
+            }
+        })
+
+        const data = await response.json()
+
+        if(response.status==401){
+            dispatch({type:'set toast', payload:{type:'error', text: data.msg}})
+            router.push('/')
+            router.refresh()
+        }
+        else if (!response.ok) {
+            dispatch({type:'set toast', payload:{type:'error', text: data.msg}})
+        }
+        else if (response.ok){
+            setStats(data.defaultStats)
+            setMonthlyApp(data.monthlyApplications)
+            setLoading(false)
+        } 
+    }
+    catch(error){
+        dispatch({type:'set toast', payload:{type:'error', text: 'Something went wrong try again later'}})
+    }
+  }
+
+  useEffect(()=>{
+      fetchStats()
+  },[])
+
   return (
     <div className="p-4 lg:ml-64">
       <div className="px-2 py-4 sm:p-4 rounded-lg dark:border-gray-700 mt-14">
         <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4'>
           <div href="#" className="block p-6 bg-white border border-gray-200 rounded-lg shadow border-b-[#647ACB] border-b-4">
             <div className='flex justify-between'>
-              <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[#647ACB] dark:text-white">45</h1>
+              <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[#647ACB] dark:text-white">{stats ? stats.Scheduled : 0}</h1>
               <span className='sm:bg-[#E0E8F9] p-2 sm:p-3 rounded'>
                 <svg
                   className="w-6 h-6 text-[#647ACB] dark:text-white"
@@ -24,7 +71,7 @@ export default function Home() {
           </div>
           <div href="#" className="block p-6 bg-white border border-gray-200 rounded-lg shadow border-b-[#E9B949] border-b-4">
             <div className='flex justify-between'>
-              <h5 className="mb-2 text-4xl font-extrabold tracking-tight text-[#E9B949] dark:text-white">32</h5>
+              <h5 className="mb-2 text-4xl font-extrabold tracking-tight text-[#E9B949] dark:text-white">{stats ? stats.Pending : 0}</h5>
               <span className='sm:bg-[#FCEFC7] p-2 sm:p-3 rounded'>
                   <svg
                     className="w-6 h-6 text-[#E9B949] dark:text-white"
@@ -42,7 +89,7 @@ export default function Home() {
           </div>
           <div href="#" className="block p-6 bg-white border border-gray-200 rounded-lg shadow border-b-[#D66A6A] border-b-4">
             <div className='flex justify-between'>
-              <h5 className="mb-2 text-4xl font-extrabold tracking-tight text-[#D66A6A] dark:text-white">9</h5>
+              <h5 className="mb-2 text-4xl font-extrabold tracking-tight text-[#D66A6A] dark:text-white">{stats ? stats.Rejected : 0}</h5>
               <span className='sm:bg-[#FFEEEE] p-2 sm:p-3 rounded'>
                 <svg
                   className="w-6 h-6 text-[#D66A6A] dark:text-white"
@@ -59,7 +106,7 @@ export default function Home() {
           </div>
           <div href="#" className="block p-6 bg-white border border-gray-200 rounded-lg shadow border-b-[#59B984] border-b-4">
             <div className='flex justify-between'>
-              <h5 className="mb-2 text-4xl font-extrabold tracking-tight text-[#59B984] dark:text-white">0</h5>
+              <h5 className="mb-2 text-4xl font-extrabold tracking-tight text-[#59B984] dark:text-white">{stats ? stats.Cleared : 0}</h5>
               <span className='sm:bg-[#E6F5E6] p-2 sm:p-3 rounded'>
                 <svg
                   className="w-6 h-6 text-[#59B984] dark:text-white"
@@ -75,7 +122,7 @@ export default function Home() {
             <p className="font-bold text-lg text-gray-800 dark:text-gray-400">Cleared</p>
           </div>
         </div>
-        <Graph/>
+        <Graph monthlyApp={monthlyApp} isLoading={isLoading}/>
       </div>
     </div>
   )
