@@ -241,7 +241,7 @@ export default function All_Interviews() {
                                     </svg>
                                     </button>
                                 </li>
-                                {console.log(displayPages)}
+
                                 {displayPages.map((elem, index) => {
                                     return(
                                     <li key={index} onClick={(e)=> elem != '...' && setPage(Number(elem))} className={`${(elem != '...' && Number(elem) != page) && 'hidden sm:list-item'}`}>
