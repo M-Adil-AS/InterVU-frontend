@@ -50,7 +50,10 @@ export default function All_Interviews() {
                 dispatch({type:'set toast', payload:{type:'error', text: data.msg}})
             }
             else if (response.ok){
-                setInterviews((pre_interviews)=> pre_interviews.filter(interview => interview._id !== ID))
+                // setInterviews((pre_interviews)=> pre_interviews.filter(interview => interview._id !== ID))
+                if(page!=1 && interviews.length==1){setPage((pre_page) => pre_page-1)}
+                setLoading(true)
+                fetchInterviews()
                 dispatch({type:'set toast', payload:{type:'success', text: 'Interview Removed'}})
             } 
         }
@@ -238,7 +241,7 @@ export default function All_Interviews() {
                                     </svg>
                                     </button>
                                 </li>
-                                
+                                {console.log(displayPages)}
                                 {displayPages.map((elem, index) => {
                                     return(
                                     <li key={index} onClick={(e)=> elem != '...' && setPage(Number(elem))} className={`${(elem != '...' && Number(elem) != page) && 'hidden sm:list-item'}`}>
